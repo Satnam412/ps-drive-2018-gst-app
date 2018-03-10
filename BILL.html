@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BILLING</title>
+
+		<style>
+			td{border: 1px solid black; padding:5px;}
+			tr:nth-child(even) {background-color: #f2f2f2;}
+		</style>
+	</head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+    <body style="background-color: lightblue; margin: 10px;">
+		<h1>PlacementSeason</h1>
+		<div ng-app="billing" ng-controller="list">
+			<div style="margin: 10px;">
+				<span>Search for product : </span>
+				<input type="text" name="Search" placeholder="Product code or name" ng-model="search_item">
+				<span><button type="button" ng-click="find_product()">Search</button></span>
+			</div>
+
+			<div>
+				<p>Searched Product</p>
+				<table style='border-collapse: collapse;font-size: 8;' >
+				    <tr>
+						<td>CODE</td>
+						<td>NAME</td>
+						<td>PRICE</td>
+						<td>GST(%)</td>
+						<td>Quantity</td>
+					</tr>
+					<tr>
+				        <td ng-repeat="(key, val) in item">{{val}}</td>
+				        <td ng-style="{'display' : item.hasOwnProperty('product_id') ? 'inline-block' : 'none'}"><input type="number" style="width: 50px;" name="Quantity" id="search_quantity" ng-model="quantity"></td>
+				    </tr>
+				    
+				</table>
+				<button type="button" ng-click="update_list()" >Done</button>
+			</div>
+			<br><br>
+			<div>
+				<p style="font-weight: bold;">Billing of products</p>
+				<table style='border-collapse: collapse;'>
+				    <tr style="font-weight: bold;">
+						<td>CODE</td>
+						<td>NAME</td>
+						<td>PRICE</td>
+						<td>Quantity</td>
+						<td>Total</td>
+						<td>GST(%)</td>
+						<td>Gross Total</td>
+					</tr>
+					<tr ng-repeat="item in final_list">
+				        <td ng-repeat="(key, val) in item">{{val}}</td>
+				    </tr>
+				</table>
+			</div>
+			<div style=" margin-top: 20px;">
+				<span style="border: solid; padding: 2px 5px 2px 5px;">Grand Total : {{total}}</span>
+				<span style="border: solid; padding: 2px 5px 2px 5px;">Grand Gross Total : {{gross_total}}</span>
+			</div>
+		</div>
+
+
+		<script>
+			var app = angular.module('billing', []);
+			app.controller('list', function($scope, $http){
+				$scope.total=0;
+				$scope.gross_total=0;
+				$scope.item={
+					"product_id":"",
+					"product_name": "",
+					"product_price":"",
+					"product_gst":""
+				};
+				$scope.final_list = [];
+				$scope.find_product = function()
+			    {
+			    	$http.get("/item/" + $scope.search_item).then(function(response) {
+				    	if(response.data.length == 0)
+				    		alert("Product not Found. Try again.");
+				    	else
+				    		$scope.item = response.data[0];
+				    });
+			    }
+
+			    $scope.update_list = function()
+			    {
+			    	if($scope.quantity>0)
+			    	{
+				    	var price = ($scope.quantity*$scope.item.product_price);
+				    	$scope.total += price;
+				    	$scope.gross_total += (price + price*$scope.item.product_gst/100);
+
+				    	$scope.final_list.push({
+				    		product_id : $scope.item.product_id,
+				    		product_name : $scope.item.product_name,
+				    		product_price : $scope.item.product_price,
+				    		product_quantity : $scope.quantity,
+				    		total : price,
+				    		product_gst : $scope.item.product_gst,
+				    		gross_total : (price + price*$scope.item.product_gst/100)
+				    	});
+				    }
+				    else
+				    {
+				    	alert('Enter Quantity of Product again...');
+				    }
+			    }
+			});
+		</script>
+	</body>

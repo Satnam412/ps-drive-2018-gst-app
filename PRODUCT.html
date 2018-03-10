@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PRODUCT</title>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+		<style>
+			td{border: 1px solid black; padding:5px;}
+			tr:nth-child(even) {background-color: #f2f2f2;}
+			
+		</style>
+	</head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+	<body style="background-color: lightblue; margin: 10px;">
+		<h1>PlacementSeason</h1>
+		<div ng-app="products" ng-controller="add">
+			<div class="col-sm-6">
+				<p>Enter the product details</p>
+				<form>
+					<span class="col-sm-2">ID : </span><input type="text" name="PID" placeholder="Product ID" ng-model="product_id"><br><br>
+					<span class="col-sm-2">Name : </span><input type="text" name="Pname" placeholder="Product Name" ng-model="product_name"><br><br>
+					<span class="col-sm-2">Price : </span><input type="text" name="Price" placeholder="Amount in Rs." ng-model="product_price"><br><br>
+					<span class="col-sm-2">GST : </span><input type="text" name="GST" placeholder="GST (in %)" ng-model="product_gst"><br><br>
+					<button type="submit" ng-click="add_item()">Submit</button>
+				</form>
+			</div>
+			<div class="col-sm-6">
+				<p style="font-weight: bold;">PRODUCT LIST</p>
+				<table style='border-collapse: collapse; '>
+				    <tr style="font-weight: bold;">
+						<td>CODE</td>
+						<td>NAME</td>
+						<td>PRICE</td>
+						<td>GST(%)</td>
+					</tr>
+					<tr ng-repeat="item in items">
+				        <td ng-repeat="(key, val) in item">{{val}}</td>
+				    </tr>
+				</table>
+			</div>
+			
+		</div>
+		<script>
+
+			var app = angular.module('products', []);
+			app.controller('add', function($scope, $http) {
+
+				$scope.item={
+					"product_id":"",
+					"product_name": "",
+					"product_price":"",
+					"product_gst":""
+				};
+
+				get_product_list();
+
+				$scope.add_item = function()
+			    {
+				    $http.post("/list", {
+	    							product_id : $scope.product_id,
+	    							product_name : $scope.product_name,
+	    							product_price : $scope.product_price,
+	    							product_gst : $scope.product_gst
+				    }).then(function(response) {
+				    	get_product_list();
+				    });
+			    }
+
+			    function get_product_list()
+			    {
+			    	$http.get("/list").then(function(responses) {
+				    	$scope.items = responses.data;
+				    });
+			    }
+
+			});
+		</script>
+	</body>
+</html>
